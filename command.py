@@ -1,11 +1,14 @@
 from abc import ABC, abstractmethod
 import tkinter as tk
+from tkinter import messagebox
+
 
 class Command(ABC):
-    
+
     @abstractmethod
     def execute(self) -> str:
         pass
+
 
 class AddTaskCommand(Command):
     def __init__(self, app, task):
@@ -17,6 +20,7 @@ class AddTaskCommand(Command):
         self._app.tasks.append(self._task)
         return self._task
 
+
 class DeleteTaskCommand(Command):
     def __init__(self, app, task_index):
         self._app = app
@@ -27,13 +31,28 @@ class DeleteTaskCommand(Command):
         self._app.listbox.delete(self._task_index)
         return deleted_task
 
+
+class EndTaskCommand(Command):
+    def __init__(self, app, task_index):
+        self._app = app
+        self._task_index = task_index
+
+    def execute(self) -> str:
+        messageboxx = messagebox.showinfo(message='Did you really ended task?')
+        if messageboxx == 'ok':
+            deleted_task = self._app.tasks.pop(self._task_index)
+            self._app.listbox.delete(self._task_index)
+            messagebox.showinfo(title='Congratulations', message='You have successfully ended your task!')
+            return deleted_task
+
+
 class Invoker:
     _command = None
 
     def set_command(self, command: Command):
         self._command = command
         return self._command
-    
+
     def execute_command(self) -> str:
         if isinstance(self._command, Command):
             return self._command.execute()
