@@ -1,9 +1,11 @@
 import tkinter as tk
 from tkinter import messagebox
 from observer import TaskObserver
-from command import Command, AddTaskCommand, DeleteTaskCommand, Invoker
-from strategy import NotifyTaskAddStrategy, NotifyDeleteStrategy, Context
+from command import Command, AddTaskCommand, DeleteTaskCommand, Invoker, EndTaskCommand
+from strategy import NotifyTaskAddStrategy, NotifyDeleteStrategy, Context, NotifyEndStrategy
 from decorator import ShowMessageBoxDecorator
+
+
 class ToDoApp(tk.Tk):
     _instance = None
 
@@ -12,7 +14,7 @@ class ToDoApp(tk.Tk):
             cls._instance = super().__new__(cls)
             cls._instance.tasks = []
         return cls._instance
-    
+
     def __init__(self):
         super().__init__()
         self.invoker = Invoker()
@@ -34,6 +36,9 @@ class ToDoApp(tk.Tk):
 
         add_button = tk.Button(self, text="Add Task", command=self.add_task)
         add_button.pack(side=tk.LEFT, padx=5)
+
+        end_button = tk.Button(self, text='End Task', command=self.end_task)
+        end_button.pack(side=tk.LEFT, padx=5)
 
         delete_button = tk.Button(self, text="Delete Task", command=self.delete_task)
         delete_button.pack(side=tk.RIGHT, padx=5)
@@ -62,10 +67,21 @@ class ToDoApp(tk.Tk):
         context = Context(notify_delete_strategy)
         context.execute_strategy(command)
 
-    
-    
+    def end_task(self):
+        try:
+            selected_task_index = self.listbox.curselection()[0]
+        except IndexError:
+            messagebox.showwarning("(!)", "Please select a task to end.")
+            return
+
+        notify_end_strategy = NotifyEndStrategy()
+
+        self.invoker.set_command(EndTaskCommand(self, selected_task_index))
+        command = self.invoker.execute_command()
+        context = Context(notify_end_strategy)
+        context.execute_strategy(command)
+
 
 if __name__ == '__main__':
     app = ToDoApp()
-
     app.mainloop()
