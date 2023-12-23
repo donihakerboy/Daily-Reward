@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+
+
 class TaskObserver(ABC):
     @abstractmethod
     def update(message):
